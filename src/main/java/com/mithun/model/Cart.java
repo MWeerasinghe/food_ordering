@@ -1,29 +1,27 @@
 package com.mithun.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class IngredientsItem {
+public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String name;
+    @OneToOne
+    private User customer;
 
-    @ManyToOne
-    private IngredientCategory category;
+    private Long total;
 
-    @JsonIgnore
-    @ManyToOne
-    private Restaurant restaurant;
-
-    private boolean inStoke= true;
-
+    @OneToMany(mappedBy = "cart",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<CartItem> item = new ArrayList<>();
 }
