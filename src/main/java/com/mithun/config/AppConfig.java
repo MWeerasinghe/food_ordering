@@ -25,14 +25,14 @@ public class AppConfig {
         http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(Authorize -> Authorize
                         .requestMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER","ADMIN") //give access to those roles
-                        .requestMatchers("/api?**").authenticated() //should proved JWD token
-                        .anyRequest().permitAll() //no roll or jwd tokens are needed for singup and sign in
+                        .requestMatchers("/api/**").authenticated() //should proved JWT token
+                        .anyRequest().permitAll() //no roll or jwd tokens are needed for singup and sign in, allow all other requests without authentication
                 ).addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
                 .csrf(csrf->csrf.disable())
                 .cors(cors->cors.configurationSource(corsConfigrationSource()));
-        
+
         return null;
-        
+
     }
 
     private CorsConfigurationSource corsConfigrationSource() {

@@ -19,6 +19,7 @@ import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.List;
 
+//run once per request
 public class JwtTokenValidator extends OncePerRequestFilter {
 
 
