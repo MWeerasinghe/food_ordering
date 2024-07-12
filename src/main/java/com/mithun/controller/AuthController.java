@@ -2,6 +2,7 @@ package com.mithun.controller;
 
 import com.mithun.config.JwtProvider;
 import com.mithun.model.Cart;
+import com.mithun.model.USER_ROLE;
 import com.mithun.model.User;
 import com.mithun.repository.CartRepository;
 import com.mithun.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/auth")
@@ -69,13 +73,24 @@ public class AuthController {
         return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
 
-    public ResponseEntity<AuthResponse> signup(@RequestBody LoginRequest req){
+    @PostMapping("/signin")
+    public ResponseEntity<AuthResponse> signin(@RequestBody LoginRequest req){
         String username = req.getEmail();
         String password = req.getPassword();
         
         Authentication authentication = authentication(username,password);
-        
-        return  null;
+        Collection<? extends GrantedAuthority>authorities = authentication.getAuthorities();
+        String role = authorities.isEmpty()?null:authorities.iterator().next().getAuthority();
+
+        String jwt = jwtProvider.generateToken(authentication);
+
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setJwt(jwt);
+        authResponse.setMessage("Login Success");
+        authResponse.setRole(USER_ROLE.valueOf(role));  //convert to a USER ROLE
+
+        return new ResponseEntity<>(authResponse, HttpStatus.OK);
+
     }
 
     private Authentication authentication(String username, String password) {
@@ -86,8 +101,10 @@ public class AuthController {
         }
 
         if(!passwordEncoder.matches(password,userDetails.getPassword())){
-            throw new BadCredentialsException("invalid password...")
+            throw new BadCredentialsException("invalid password...");
         }
+
+        return new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
 
     }
 
